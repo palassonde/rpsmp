@@ -47,6 +47,9 @@ var setEventHandlers = function () {
     // New player message received
     socket.on('new player', onNewPlayer)
 
+    // New player message received
+    socket.on('update player', onUpdatePlayer)
+
     // Player move message received
     socket.on('change player option', onChangePlayerOption)
 
@@ -63,7 +66,6 @@ function onSocketConnected () {
     })
     opponents = []
 
-    // Send local player data to the game server
     socket.emit('new player', { option: player.option })
 }
 
@@ -89,23 +91,23 @@ function onNewPlayer (data) {
     var att = document.createAttribute('id')
     att.value = data.id
     entry.setAttributeNode(att);
-    entry.appendChild(document.createTextNode(data.id))
+    entry.appendChild(document.createTextNode(data.name))
     list.appendChild(entry);
     opponents.push(new RemotePlayer(data.id, game, player, data.option))
 }
 
 // Move player
 function onChangePlayerOption (data) {
-    var movePlayer = playerById(data.id)
+    var updatePlayer = playerById(data.id)
 
     // Player not found
-    if (!movePlayer) {
+    if (!updatePlayer) {
         console.log('Player not found: ', data.id)
         return
     }
 
     // Update player position
-    movePlayer.player.option = data.option
+    updatePlayer.player.option = data.option
 }
 
 // Remove player
@@ -124,6 +126,13 @@ function onRemovePlayer (data) {
     var entry = document.getElementById(data.id)
     entry.parentNode.removeChild(entry);
     opponents.splice(opponents.indexOf(removePlayer), 1)
+}
+
+// Remove player
+function onUpdatePlayer (data) {
+
+    // Update player name
+    document.getElementById(data.id).innerHTML = data.name
 }
 
 function update () {
@@ -161,4 +170,11 @@ function playerById (id) {
     }
 
     return false
+}
+
+function formSubmit(){
+
+    var name = document.getElementById('name').value
+    socket.emit('update player', { name: name })
+
 }
