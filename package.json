@@ -4,7 +4,8 @@
   "description": "Rock Paper Scissors Game",
   "main": "lib/index.js",
   "scripts": {
-    "test": "test"
+    "start": "node .",
+    "dev": "nodemon ."
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,10 @@
   },
   "homepage": "https://github.com/palassonde/rpsmp#readme",
   "dependencies": {
+    "ecstatic": "^1.4.1",
     "socket.io": "^1.4.8"
+  },
+  "devDependencies": {
+    "nodemon": "^1.9.2"
   }
 }
