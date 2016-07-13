@@ -84,6 +84,13 @@ function onNewPlayer (data) {
     }
 
     // Add new player to the remote players array
+    var list = document.getElementById("playersList")
+    var entry = document.createElement('li')
+    var att = document.createAttribute('id')
+    att.value = data.id
+    entry.setAttributeNode(att);
+    entry.appendChild(document.createTextNode(data.id))
+    list.appendChild(entry);
     opponents.push(new RemotePlayer(data.id, game, player, data.option))
 }
 
@@ -114,6 +121,8 @@ function onRemovePlayer (data) {
     removePlayer.player.kill()
 
     // Remove player from array
+    var entry = document.getElementById(data.id)
+    entry.parentNode.removeChild(entry);
     opponents.splice(opponents.indexOf(removePlayer), 1)
 }
 
