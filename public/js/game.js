@@ -24,7 +24,9 @@ function create () {
     game.stage.backgroundColor = "#FFFFFF";
 
     // The base of our player
-    player = game.add.sprite(0, 0, 'ciseau')
+    player = game.add.sprite(10, 200, 'roche')
+    player.scale.x = -0.5
+    player.scale.y = 0.5
     player.anchor.setTo(0.5, 0.5)
 
     player.bringToTop()
@@ -46,7 +48,7 @@ var setEventHandlers = function () {
     socket.on('new player', onNewPlayer)
 
     // Player move message received
-    socket.on('move player', onMovePlayer)
+    socket.on('change player option', onChangePlayerOption)
 
     // Player removed message received
     socket.on('remove player', onRemovePlayer)
@@ -62,7 +64,7 @@ function onSocketConnected () {
     opponents = []
 
     // Send local player data to the game server
-    socket.emit('new player', { x: player.x, y: player.y })
+    socket.emit('new player', { option: player.option })
 }
 
 // Socket disconnected
@@ -82,11 +84,11 @@ function onNewPlayer (data) {
     }
 
     // Add new player to the remote players array
-    opponents.push(new RemotePlayer(data.id, game, player, data.x, data.y))
+    opponents.push(new RemotePlayer(data.id, game, player, data.option))
 }
 
 // Move player
-function onMovePlayer (data) {
+function onChangePlayerOption (data) {
     var movePlayer = playerById(data.id)
 
     // Player not found
@@ -96,8 +98,7 @@ function onMovePlayer (data) {
     }
 
     // Update player position
-    movePlayer.player.x = data.x
-    movePlayer.player.y = data.y
+    movePlayer.player.option = data.option
 }
 
 // Remove player
@@ -118,7 +119,24 @@ function onRemovePlayer (data) {
 
 function update () {
 
-    socket.emit('move player', { x: player.x, y: player.y })
+    for (var i = 0; i < opponents.length; i++) {
+        if (opponents[i].alive) {
+            opponents[i].update()
+        }
+    }
+
+    if (cursors.left.isDown) {
+        player.option = 'roche'
+        player.loadTexture('roche')
+    } else if (cursors.down.isDown) {
+        player.option = 'papier'
+        player.loadTexture('papier')
+    } else if (cursors.right.isDown) {
+        player.option = 'ciseau'
+        player.loadTexture('ciseau')
+    }
+
+    socket.emit('change player option', { option: player.option })
 }
 
 function render () {
