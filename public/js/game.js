@@ -142,15 +142,16 @@ function onUpdatePlayer (data) {
 }
 
 function onMessageSent (data) {
-
+    var date = new Date;
     var chatBox = document.getElementById("chatBox")
     var entry = document.createElement('p')
     var att = document.createAttribute('style')
     att.value = "color: white;"
     entry.setAttributeNode(att);
     entry.setAttribute('id', 'entry')
-    entry.appendChild(document.createTextNode(data.name + ' : ' + data.message))
+    entry.appendChild(document.createTextNode('(' + date.toLocaleTimeString() + ') ' + data.name + ' : ' + data.message))
     chatBox.appendChild(entry);
+    $('#chatBox').animate({"scrollTop": $('#chatBox')[0].scrollHeight}, "fast");
 }
 
 function onChallengeSent (data) {
@@ -213,6 +214,7 @@ function messageSubmit(key){
 
     if(event.keyCode == 13 && message !== '') {
 
+        var date = new Date;
         document.getElementById('message').value = ''
         var chatBox = document.getElementById("chatBox")
         var entry = document.createElement('p')
@@ -220,8 +222,9 @@ function messageSubmit(key){
         att.value = "color: white;"
         entry.setAttributeNode(att);
         entry.setAttribute('id', 'entry')
-        entry.appendChild(document.createTextNode('You : ' + message))
+        entry.appendChild(document.createTextNode('(' + date.toLocaleTimeString() + ') You : ' + message))
         chatBox.appendChild(entry);
+        $('#chatBox').animate({"scrollTop": $('#chatBox')[0].scrollHeight}, "fast");
         socket.emit('message sent', { message: message })
     } else {
         socket.emit('player typing')
@@ -229,6 +232,7 @@ function messageSubmit(key){
 }
 
 function sendChallenge(id) {
+    //$('.container').hide()
     console.log('challenge sent!' + id)
     socket.emit('challenge sent', { challengedId: id })
 
