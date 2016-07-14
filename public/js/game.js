@@ -151,12 +151,14 @@ function onMessageSent (data) {
     entry.setAttribute('id', 'entry')
     entry.appendChild(document.createTextNode('(' + date.toLocaleTimeString() + ') ' + data.name + ' : ' + data.message))
     chatBox.appendChild(entry);
-    $('#chatBox').animate({"scrollTop": $('#chatBox')[0].scrollHeight}, "fast");
+    $('#chatBox').animate({"scrollTop": $('#chatBox')[0].scrollHeight}, "fast")
 }
 
 function onChallengeSent (data) {
 
-    alert('Youve been sent a challenge  by ' + data.name)
+    $('#challenge').append('<p>You just received a challenge from ' + data.name + '</p>')
+    $('#challenge').append('<input type="button" onclick="accept()" value="Accept">')
+    $('#challenge').append('<input type="button" onclick="refuse()" value="Refuse">')
 }
 
 function update () {
@@ -224,7 +226,7 @@ function messageSubmit(key){
         entry.setAttribute('id', 'entry')
         entry.appendChild(document.createTextNode('(' + date.toLocaleTimeString() + ') You : ' + message))
         chatBox.appendChild(entry);
-        $('#chatBox').animate({"scrollTop": $('#chatBox')[0].scrollHeight}, "fast");
+        $('#chatBox').animate({"scrollTop": $('#chatBox')[0].scrollHeight}, "fast")
         socket.emit('message sent', { message: message })
     } else {
         socket.emit('player typing')
@@ -235,5 +237,6 @@ function sendChallenge(id) {
     //$('.container').hide()
     console.log('challenge sent!' + id)
     socket.emit('challenge sent', { challengedId: id })
+    $("#challenge").append('Awaiting response...')
 
 }
