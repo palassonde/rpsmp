@@ -1,6 +1,6 @@
 /* global Phaser */
 
-var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render })
+var game = new Phaser.Game(800, 400, Phaser.AUTO, 'game', { preload: preload, create: create, update: update, render: render })
 
 function preload () {
     game.load.image('papier', 'assets/papier.png')
@@ -18,16 +18,14 @@ function create () {
     opponents = []
     socket = io.connect()
 
-    // Resize our game world to be a 2000 x 2000 square
-    game.world.setBounds(-500, -500, 1000, 1000)
-
-    game.stage.backgroundColor = "#FFFFFF";
+    game.stage.backgroundColor = "#c9ffe1";
 
     // The base of our player
-    player = game.add.sprite(10, 200, 'roche')
+    player = game.add.sprite(160, 200, 'roche')
     player.scale.x = -0.5
     player.scale.y = 0.5
     player.anchor.setTo(0.5, 0.5)
+    player.name = "Unnamed"
 
     player.bringToTop()
 
@@ -55,6 +53,9 @@ var setEventHandlers = function () {
 
     // Player removed message received
     socket.on('remove player', onRemovePlayer)
+
+    // Listen for player message sent
+    socket.on('message sent', onMessageSent)
 }
 
 // Socket connected
@@ -65,7 +66,7 @@ function onSocketConnected () {
         opponent.player.kill()
     })
     opponents = []
-
+    document.getElementById('playerName').innerHTML = 'Unnamed'
     socket.emit('new player', { option: player.option })
 }
 
@@ -135,6 +136,17 @@ function onUpdatePlayer (data) {
     document.getElementById(data.id).innerHTML = data.name
 }
 
+function onMessageSent (data) {
+
+    var chatBox = document.getElementById("chatBox")
+    var entry = document.createElement('p')
+    var att = document.createAttribute('style')
+    att.value = "color: white;"
+    entry.setAttributeNode(att);
+    entry.appendChild(document.createTextNode(data.name + ' : ' + data.message))
+    chatBox.appendChild(entry);
+}
+
 function update () {
 
     for (var i = 0; i < opponents.length; i++) {
@@ -175,6 +187,33 @@ function playerById (id) {
 function formSubmit(){
 
     var name = document.getElementById('name').value
-    socket.emit('update player', { name: name })
+    document.getElementById('name').value = ''
+
+    if (name !== ''){
+        document.getElementById('playerName').innerHTML = name
+        player.name = name
+        socket.emit('update player', { name: name })
+    } else {
+        alert('Name must not be empty!')
+    }
+
+}
+
+function messageSubmit(key){
+
+    if(event.keyCode == 13) {
+        var message = document.getElementById('message').value
+        document.getElementById('message').value = ''
+        var chatBox = document.getElementById("chatBox")
+        var entry = document.createElement('p')
+        var att = document.createAttribute('style')
+        att.value = "color: white;"
+        entry.setAttributeNode(att);
+        entry.appendChild(document.createTextNode(player.name + ' : ' + message))
+        chatBox.appendChild(entry);
+        socket.emit('message sent', { message: message })
+    } else {
+        socket.emit('player typing')
+    }
 
 }

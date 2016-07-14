@@ -1,8 +1,20 @@
 body {
     margin: 0;
-    overflow: hidden;
 }
 
 canvas {
     display: block;
+}
+
+#chatBox {
+    text-align: left;
+    overflow: auto;
+    height:200px;
+    background-color: black;
+}
+
+.footer {
+
+    margin-top: 100px;
+    background-color: green;
 }

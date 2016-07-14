@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="/style/bootstrap.min.css">
     <script src='/js/vendor/phaser.min.js'></script>
     <script src='/socket.io/socket.io.js'></script>
+    <script src='/js/RemotePlayer.js'></script>
+    <script src='/js/game.js'></script>
 </head>
 <body>
     <div class="container">
@@ -14,21 +16,27 @@
             Welcome to Rock Paper Scissors
         </h1>
         <h2>
-            Connection
+            Player Profile
         </h2>
-        <form>
-            <input type="text" id="name" placeholder="Enter Player Name">
-            <input type="button" onclick="formSubmit()" class="btn btn-default" value="Submit">
-        </form>
-        <h1>
+        <label>Name</label><p id="playerName"></p>
+        <input type="text" id="name" placeholder="Enter Your Name">
+        <input type="button" onclick="formSubmit()" class="btn btn-default" value="Submit">
+        <h2>
             Online Players
-        </h1>
+        </h2>
         <ul id="playersList">
         </ul>
-        <div>
-            <script src='/js/RemotePlayer.js'></script>
-            <script src='/js/game.js'></script>
-        </div>
+        <h2>
+            Duel Box
+        </h2>
+        <div id="game"></div>
+        <h2>
+            Chat Box
+        </h2>
+        <div id="chatBox"></div>
+        <input class="form-control" onkeydown="messageSubmit(this)" type="text" id="message" placeholder="Enter Your Message">
+    </div>
+    <div class="footer">
     </div>
 </body>
 </html>
