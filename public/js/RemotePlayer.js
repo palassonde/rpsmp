@@ -6,7 +6,7 @@ var RemotePlayer = function (index, game, player, option) {
     this.player = player
     this.alive = true
     this.player.option = option
-    this.player = game.add.sprite(490, 100, 'roche')
+    this.player = game.add.sprite(480, 100, 'roche')
     this.player.scale.x = 0.5
     this.player.scale.y = 0.5
 

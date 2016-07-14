@@ -6,6 +6,10 @@ canvas {
     display: block;
 }
 
+#game {
+
+}
+
 #chatBox {
     text-align: left;
     overflow: auto;
