@@ -56,6 +56,9 @@ var setEventHandlers = function () {
 
     // Listen for player message sent
     socket.on('message sent', onMessageSent)
+
+    // Listen for player message sent
+    socket.on('challenge sent', onChallengeSent)
 }
 
 // Socket connected
@@ -92,6 +95,8 @@ function onNewPlayer (data) {
     var att = document.createAttribute('id')
     att.value = data.id
     entry.setAttributeNode(att);
+    entry.setAttribute('onclick', 'sendChallenge(this.id)')
+    entry.setAttribute('class', 'players')
     entry.appendChild(document.createTextNode(data.name))
     list.appendChild(entry);
     opponents.push(new RemotePlayer(data.id, game, player, data.option))
@@ -143,8 +148,14 @@ function onMessageSent (data) {
     var att = document.createAttribute('style')
     att.value = "color: white;"
     entry.setAttributeNode(att);
+    entry.setAttribute('id', 'entry')
     entry.appendChild(document.createTextNode(data.name + ' : ' + data.message))
     chatBox.appendChild(entry);
+}
+
+function onChallengeSent (data) {
+
+    alert('Youve been sent a challenge  by ' + data.name)
 }
 
 function update () {
@@ -184,7 +195,7 @@ function playerById (id) {
     return false
 }
 
-function formSubmit(){
+function changeName(){
 
     var name = document.getElementById('name').value
     document.getElementById('name').value = ''
@@ -193,27 +204,32 @@ function formSubmit(){
         document.getElementById('playerName').innerHTML = name
         player.name = name
         socket.emit('update player', { name: name })
-    } else {
-        alert('Name must not be empty!')
     }
-
 }
 
 function messageSubmit(key){
 
-    if(event.keyCode == 13) {
-        var message = document.getElementById('message').value
+    var message = document.getElementById('message').value
+
+    if(event.keyCode == 13 && message !== '') {
+
         document.getElementById('message').value = ''
         var chatBox = document.getElementById("chatBox")
         var entry = document.createElement('p')
         var att = document.createAttribute('style')
         att.value = "color: white;"
         entry.setAttributeNode(att);
-        entry.appendChild(document.createTextNode(player.name + ' : ' + message))
+        entry.setAttribute('id', 'entry')
+        entry.appendChild(document.createTextNode('You : ' + message))
         chatBox.appendChild(entry);
         socket.emit('message sent', { message: message })
     } else {
         socket.emit('player typing')
     }
+}
+
+function sendChallenge(id) {
+    console.log('challenge sent!' + id)
+    socket.emit('challenge sent', { challengedId: id })
 
 }

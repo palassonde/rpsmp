@@ -10,6 +10,10 @@ canvas {
 
 }
 
+#entry {
+    margin-left: 5px;
+}
+
 #chatBox {
     text-align: left;
     overflow: auto;
@@ -21,4 +25,11 @@ canvas {
 
     margin-top: 100px;
     background-color: green;
+}
+
+.players:hover {
+
+    color: #00aaff;
+    cursor: pointer;
+
 }
