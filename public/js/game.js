@@ -12,6 +12,7 @@ var socket
 var player
 var opponents
 var cursors
+var challengerId
 
 function create () {
 
@@ -33,6 +34,32 @@ function create () {
 
     // Start listening for events
     setEventHandlers()
+}
+
+function update () {
+
+    for (var i = 0; i < opponents.length; i++) {
+        if (opponents[i].alive) {
+            opponents[i].update()
+        }
+    }
+
+    if (cursors.left.isDown) {
+        player.option = 'roche'
+        player.loadTexture('roche')
+    } else if (cursors.down.isDown) {
+        player.option = 'papier'
+        player.loadTexture('papier')
+    } else if (cursors.right.isDown) {
+        player.option = 'ciseau'
+        player.loadTexture('ciseau')
+    }
+
+    socket.emit('change player option', { option: player.option })
+}
+
+function render () {
+
 }
 
 var setEventHandlers = function () {
@@ -59,6 +86,9 @@ var setEventHandlers = function () {
 
     // Listen for player message sent
     socket.on('challenge sent', onChallengeSent)
+
+    // Listen for player response sent
+    socket.on('response sent', onResponseSent)
 }
 
 // Socket connected
@@ -156,46 +186,23 @@ function onMessageSent (data) {
 
 function onChallengeSent (data) {
 
+    challengerId = data.challengerId
     $('#challenge').append('<p>You just received a challenge from ' + data.name + '</p>')
-    $('#challenge').append('<input type="button" onclick="accept()" value="Accept">')
-    $('#challenge').append('<input type="button" onclick="refuse()" value="Refuse">')
+    $('#challenge').append('<input type="button" onclick="response(true)" value="Accept">')
+    $('#challenge').append('<input type="button" onclick="response(false)" value="Refuse">')
 }
 
-function update () {
+function onResponseSent (data) {
 
-    for (var i = 0; i < opponents.length; i++) {
-        if (opponents[i].alive) {
-            opponents[i].update()
-        }
-    }
-
-    if (cursors.left.isDown) {
-        player.option = 'roche'
-        player.loadTexture('roche')
-    } else if (cursors.down.isDown) {
-        player.option = 'papier'
-        player.loadTexture('papier')
-    } else if (cursors.right.isDown) {
-        player.option = 'ciseau'
-        player.loadTexture('ciseau')
-    }
-
-    socket.emit('change player option', { option: player.option })
+    console.log(data)
+    $('#challenge').empty()
 }
 
-function render () {
+function response(response) {
 
-}
-
-// Find player by ID
-function playerById (id) {
-    for (var i = 0; i < opponents.length; i++) {
-        if (opponents[i].player.name === id) {
-            return opponents[i]
-        }
-    }
-
-    return false
+    console.log(challengerId)
+    socket.emit('response sent', { challengerId: challengerId, response: response })
+    $('#challenge').empty()
 }
 
 function changeName(){
@@ -234,9 +241,19 @@ function messageSubmit(key){
 }
 
 function sendChallenge(id) {
-    //$('.container').hide()
+
     console.log('challenge sent!' + id)
     socket.emit('challenge sent', { challengedId: id })
-    $("#challenge").append('Awaiting response...')
+    $("#challenge").append('<p>Awaiting response...</p>')
+}
 
+// Find player by ID
+function playerById (id) {
+    for (var i = 0; i < opponents.length; i++) {
+        if (opponents[i].player.name === id) {
+            return opponents[i]
+        }
+    }
+
+    return false
 }
