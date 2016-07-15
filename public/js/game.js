@@ -110,7 +110,7 @@ var setEventHandlers = function () {
 function onSocketConnected () {
     console.log('Connected to socket server')
     $('#playerName').text('Unnamed')
-    socket.emit('new player', { option: player.option })
+    socket.emit('new player', {})
 }
 
 // Socket disconnected
@@ -245,7 +245,8 @@ function startChallenge() {
 }
 
 function spawnOpponent() {
-    opponent.player = game.add.sprite(280, 100, 'roche')
+    opponent.player = game.add.sprite(600, 100, 'roche')
+    game.add.tween(opponent.player).to( { x: 280 }, 500, Phaser.Easing.Linear.None, true);
     opponent.player.scale.x = 0.5
     opponent.player.scale.y = 0.5
 }
@@ -317,12 +318,13 @@ function cleanUp () {
 
     text.kill()
     text = null
-    opponent.player.kill()
+    game.add.tween(opponent.player).to( { x: 600 }, 500, Phaser.Easing.Linear.None, true);
     opponent = null
     inChallenge = false
     player.state = 'neutral'
     challengerId = ''
     sentOption = false
+    $("#challenge").empty()
 }
 
 // Helpers //
