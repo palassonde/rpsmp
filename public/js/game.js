@@ -129,7 +129,7 @@ function onNewPlayer (data) {
     entry.setAttribute('class', 'players')
     entry.appendChild(document.createTextNode(data.name))
     list.appendChild(entry);
-    opponents.push(new RemotePlayer(data.id, game, player, data.option))
+    opponents.push(new RemotePlayer(data.id, game, player))
 }
 
 // Move player
@@ -194,15 +194,26 @@ function onChallengeSent (data) {
 
 function onResponseSent (data) {
 
-    console.log(data)
     $('#challenge').empty()
+    if(data.response){
+        $('#challenge').append('<p> Challenge Accepted! </p>')
+
+    } else {
+        $('#challenge').append('<p> Challenge Refused! </p>')
+    }
+
 }
 
 function response(response) {
 
-    console.log(challengerId)
     socket.emit('response sent', { challengerId: challengerId, response: response })
     $('#challenge').empty()
+    if(response){
+        $('#challenge').append('<p> Challenge Accepted! </p>')
+    } else {
+        $('#challenge').append('<p> Challenge Refused! </p>')
+    }
+
 }
 
 function changeName(){
