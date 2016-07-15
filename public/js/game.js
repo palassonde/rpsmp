@@ -1,4 +1,4 @@
-/* global Phaser */
+/* Global Phaser */
 
 var game = new Phaser.Game(600, 400, Phaser.AUTO, 'game', { preload: preload, create: create, update: update, render: render })
 
@@ -13,23 +13,29 @@ var player
 var opponents
 var cursors
 var challengerId
+var inChallenge
+var text
 var opponent
+var sentOption
 
 function create () {
 
     opponents = []
     socket = io.connect()
+    inChallenge = false
+    sentOption = false
 
-    game.stage.backgroundColor = "#c9ffe1";
+    game.stage.backgroundColor = '#c9ffe1';
 
-    // The base of our player
+    // Player's Hand
     player = game.add.sprite(160, 200, 'roche')
     player.scale.x = -0.5
     player.scale.y = 0.5
     player.anchor.setTo(0.5, 0.5)
-    player.name = "Unnamed"
-
+    player.name = 'Unnamed'
     player.bringToTop()
+    player.state = 'neutral'
+    player.points = 0
 
     cursors = game.input.keyboard.createCursorKeys()
 
@@ -39,37 +45,32 @@ function create () {
 
 function update () {
 
-    // for (var i = 0; i < opponents.length; i++) {
-    //     if (opponents[i].alive) {
-    //         opponents[i].update()
-    //     }
-    // }
-
-    if (cursors.left.isDown) {
-        player.option = 'roche'
-        player.loadTexture('roche')
-    } else if (cursors.down.isDown) {
-        player.option = 'papier'
-        player.loadTexture('papier')
-    } else if (cursors.right.isDown) {
-        player.option = 'ciseau'
-        player.loadTexture('ciseau')
+    if (!sentOption) {
+        if (cursors.left.isDown) {
+            player.option = 'roche'
+            player.loadTexture('roche')
+        } else if (cursors.down.isDown) {
+            player.option = 'papier'
+            player.loadTexture('papier')
+        } else if (cursors.right.isDown) {
+            player.option = 'ciseau'
+            player.loadTexture('ciseau')
+        }
     }
 
-    if (timeUp()){
-        socket.emit('change player option', { option: player.option })
+    if (inChallenge && cursors.up.isDown && !sentOption){
+        if (opponent.id){
+            socket.emit('player option sent', { opponentId: opponent.id, option: player.option, state: player.state })
+        } else {
+            console.log('Opponent Id not set!')
+        }
+        sentOption = true
     }
-
-
 }
 
 function render () {
 
-}
 
-function timeUp () {
-
-    return false
 }
 
 var setEventHandlers = function () {
@@ -85,9 +86,6 @@ var setEventHandlers = function () {
     // New player message received
     socket.on('update player', onUpdatePlayer)
 
-    // Player move message received
-    socket.on('change player option', onChangePlayerOption)
-
     // Player removed message received
     socket.on('remove player', onRemovePlayer)
 
@@ -99,16 +97,18 @@ var setEventHandlers = function () {
 
     // Listen for player response sent
     socket.on('response sent', onResponseSent)
+
+    // Listen for player option sent
+    socket.on('challenge ended', onChallengeEnded)
+
+    socket.on('player busy', onPlayerBusy)
 }
+
+// Event Handlers //
 
 // Socket connected
 function onSocketConnected () {
     console.log('Connected to socket server')
-
-    // opponents.forEach(function (opponent) {
-    //     opponent.player.kill()
-    // })
-    opponents = []
     $('#playerName').text('Unnamed')
     socket.emit('new player', { option: player.option })
 }
@@ -130,7 +130,7 @@ function onNewPlayer (data) {
     }
 
     // Add new player to the remote players array
-    var list = document.getElementById("playersList")
+    var list = document.getElementById('playersList')
     var entry = document.createElement('li')
     var att = document.createAttribute('id')
     att.value = data.id
@@ -140,20 +140,6 @@ function onNewPlayer (data) {
     entry.appendChild(document.createTextNode(data.name))
     list.appendChild(entry);
     opponents.push(new RemotePlayer(data.id, game))
-}
-
-// Move player
-function onChangePlayerOption (data) {
-    var updatePlayer = playerById(data.id)
-
-    // Player not found
-    if (!updatePlayer) {
-        console.log('Player not found: ', data.id)
-        return
-    }
-
-    // Update player position
-    updatePlayer.player.option = data.option
 }
 
 // Remove player
@@ -176,10 +162,8 @@ function onRemovePlayer (data) {
     opponents.splice(opponents.indexOf(removePlayer), 1)
 }
 
-// Remove player
 function onUpdatePlayer (data) {
 
-    // Update player name
     document.getElementById(data.id).innerHTML = data.name
 }
 
@@ -198,10 +182,18 @@ function onMessageSent (data) {
 
 function onChallengeSent (data) {
 
-    challengerId = data.challengerId
-    $('#challenge').append('<p>You just received a challenge from ' + data.name + '</p>')
-    $('#challenge').append('<input type="button" onclick="response(true)" value="Accept">')
-    $('#challenge').append('<input type="button" onclick="response(false)" value="Refuse">')
+    if (player.state === 'neutral'){
+        challengerId = data.challengerId
+        player.state = 'choosing'
+        $('#challenge').append('<p>You just received a challenge from ' + data.name + '</p>')
+        $('#challenge').append('<input type="button" onclick="respond(true)" value="Accept">')
+        $('#challenge').append('<input type="button" onclick="respond(false)" value="Refuse">')
+
+    } else {
+        console.log('received challenge but busy!')
+        socket.emit('player busy', { challengerId: data.challengerId })
+    }
+
 }
 
 function onResponseSent (data) {
@@ -210,10 +202,45 @@ function onResponseSent (data) {
     if(data.response){
         $('#challenge').append('<p> Challenge Accepted! </p>')
         opponent = playerById(data.challengedId)
-        spawnOpponent()
+        player.state = 'challenger'
+        startChallenge()
     } else {
+        player.state = 'neutral'
         $('#challenge').append('<p> Challenge Refused! </p>')
     }
+
+}
+
+function onChallengeEnded (data) {
+
+    console.log(data.opponentOption)
+
+    opponent.player.loadTexture(data.opponentOption)
+
+    console.log(opponent)
+
+    if (data.winnerId === opponent.id){
+        text = game.add.text(100, 100, 'Vous avez perdu!')
+    } else if(data.winnerId === 'null') {
+        text = game.add.text(100, 100, 'Partie Null')
+    } else {
+        text = game.add.text(100, 100, 'Vous avez gagné!')
+        player.points++
+    }
+
+    setTimeout(cleanUp, 3000)
+}
+
+function onPlayerBusy (data) {
+
+    console.log(data)
+}
+
+// Game related functions //
+
+function startChallenge() {
+    spawnOpponent()
+    inChallenge = true
 
 }
 
@@ -223,16 +250,17 @@ function spawnOpponent() {
     opponent.player.scale.y = 0.5
 }
 
-function response(response) {
+function respond(response) {
 
     socket.emit('response sent', { challengerId: challengerId, response: response })
     $('#challenge').empty()
     if(response){
         $('#challenge').append('<p> Challenge Accepted! </p>')
         opponent = playerById(challengerId)
-        console.log(opponent)
-        spawnOpponent()
+        player.state = 'challenged'
+        startChallenge()
     } else {
+        challengerId = ''
         $('#challenge').append('<p> Challenge Refused! </p>')
     }
 
@@ -275,12 +303,30 @@ function messageSubmit(key){
 
 function sendChallenge(id) {
 
-    console.log('challenge sent!' + id)
-    socket.emit('challenge sent', { challengedId: id })
-    $("#challenge").append('<p>Awaiting response...</p>')
+    if (player.state === 'neutral'){
+        console.log('Challenge sent to ' + id)
+        socket.emit('challenge sent', { challengedId: id })
+        player.state = 'waiting'
+        $("#challenge").append('<p>Awaiting response...</p>')
+    } else {
+        console.log('you are busy!')
+    }
 }
 
-// Find player by ID
+function cleanUp () {
+
+    text.kill()
+    text = null
+    opponent.player.kill()
+    opponent = null
+    inChallenge = false
+    player.state = 'neutral'
+    challengerId = ''
+    sentOption = false
+}
+
+// Helpers //
+
 function playerById (id) {
     for (var i = 0; i < opponents.length; i++) {
         if (opponents[i].id === id) {
