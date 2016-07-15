@@ -262,6 +262,7 @@ function respond(response) {
         startChallenge()
     } else {
         challengerId = ''
+        player.sate = 'neutral'
         $('#challenge').append('<p> Challenge Refused! </p>')
     }
 
