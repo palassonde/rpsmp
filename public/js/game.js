@@ -1,6 +1,6 @@
 /* global Phaser */
 
-var game = new Phaser.Game(800, 400, Phaser.AUTO, 'game', { preload: preload, create: create, update: update, render: render })
+var game = new Phaser.Game(600, 400, Phaser.AUTO, 'game', { preload: preload, create: create, update: update, render: render })
 
 function preload () {
     game.load.image('papier', 'assets/papier.png')
@@ -13,6 +13,7 @@ var player
 var opponents
 var cursors
 var challengerId
+var opponent
 
 function create () {
 
@@ -38,11 +39,11 @@ function create () {
 
 function update () {
 
-    for (var i = 0; i < opponents.length; i++) {
-        if (opponents[i].alive) {
-            opponents[i].update()
-        }
-    }
+    // for (var i = 0; i < opponents.length; i++) {
+    //     if (opponents[i].alive) {
+    //         opponents[i].update()
+    //     }
+    // }
 
     if (cursors.left.isDown) {
         player.option = 'roche'
@@ -55,11 +56,20 @@ function update () {
         player.loadTexture('ciseau')
     }
 
-    socket.emit('change player option', { option: player.option })
+    if (timeUp()){
+        socket.emit('change player option', { option: player.option })
+    }
+
+
 }
 
 function render () {
 
+}
+
+function timeUp () {
+
+    return false
 }
 
 var setEventHandlers = function () {
@@ -95,11 +105,11 @@ var setEventHandlers = function () {
 function onSocketConnected () {
     console.log('Connected to socket server')
 
-    opponents.forEach(function (opponent) {
-        opponent.player.kill()
-    })
+    // opponents.forEach(function (opponent) {
+    //     opponent.player.kill()
+    // })
     opponents = []
-    document.getElementById('playerName').innerHTML = 'Unnamed'
+    $('#playerName').text('Unnamed')
     socket.emit('new player', { option: player.option })
 }
 
@@ -129,7 +139,7 @@ function onNewPlayer (data) {
     entry.setAttribute('class', 'players')
     entry.appendChild(document.createTextNode(data.name))
     list.appendChild(entry);
-    opponents.push(new RemotePlayer(data.id, game, player))
+    opponents.push(new RemotePlayer(data.id, game))
 }
 
 // Move player
@@ -156,7 +166,9 @@ function onRemovePlayer (data) {
         return
     }
 
-    removePlayer.player.kill()
+    if (removePlayer.player){
+        removePlayer.player.kill()
+    }
 
     // Remove player from array
     var entry = document.getElementById(data.id)
@@ -197,11 +209,18 @@ function onResponseSent (data) {
     $('#challenge').empty()
     if(data.response){
         $('#challenge').append('<p> Challenge Accepted! </p>')
-
+        opponent = playerById(data.challengedId)
+        spawnOpponent()
     } else {
         $('#challenge').append('<p> Challenge Refused! </p>')
     }
 
+}
+
+function spawnOpponent() {
+    opponent.player = game.add.sprite(280, 100, 'roche')
+    opponent.player.scale.x = 0.5
+    opponent.player.scale.y = 0.5
 }
 
 function response(response) {
@@ -210,6 +229,9 @@ function response(response) {
     $('#challenge').empty()
     if(response){
         $('#challenge').append('<p> Challenge Accepted! </p>')
+        opponent = playerById(challengerId)
+        console.log(opponent)
+        spawnOpponent()
     } else {
         $('#challenge').append('<p> Challenge Refused! </p>')
     }
@@ -261,7 +283,7 @@ function sendChallenge(id) {
 // Find player by ID
 function playerById (id) {
     for (var i = 0; i < opponents.length; i++) {
-        if (opponents[i].player.name === id) {
+        if (opponents[i].id === id) {
             return opponents[i]
         }
     }

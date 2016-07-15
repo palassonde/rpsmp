@@ -1,16 +1,10 @@
 /* global game */
 
-var RemotePlayer = function (index, game, player) {
+var RemotePlayer = function (id, game) {
 
+    this.id = id
     this.game = game
-    this.player = player
     this.alive = true
-    // this.player.option = option
-    this.player = game.add.sprite(480, 100, 'roche')
-    this.player.scale.x = 0.5
-    this.player.scale.y = 0.5
-
-    this.player.name = index.toString()
 }
 
 RemotePlayer.prototype.update = function () {
