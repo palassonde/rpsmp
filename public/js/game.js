@@ -17,6 +17,7 @@ var inChallenge
 var text
 var opponent
 var sentOption
+var challengedId
 
 function create () {
 
@@ -102,6 +103,8 @@ var setEventHandlers = function () {
     socket.on('challenge ended', onChallengeEnded)
 
     socket.on('player busy', onPlayerBusy)
+
+    socket.on('challenge canceled', onChallengeCanceled)
 }
 
 // Event Handlers //
@@ -233,7 +236,19 @@ function onChallengeEnded (data) {
 
 function onPlayerBusy (data) {
 
-    console.log(data)
+    player.state = 'neutral'
+    challengedId = ''
+    challengerId = ''
+    $('#challenge').empty()
+    $('#challenge').append('<p> Player Busy ! </p>')
+}
+
+function onChallengeCanceled (data) {
+
+    player.state = 'neutral'
+    challengerId = ''
+    $('#challenge').empty()
+
 }
 
 // Game related functions //
@@ -307,12 +322,22 @@ function sendChallenge(id) {
 
     if (player.state === 'neutral'){
         console.log('Challenge sent to ' + id)
+        challengedId = id
         socket.emit('challenge sent', { challengedId: id })
         player.state = 'waiting'
         $("#challenge").append('<p>Awaiting response...</p>')
+        $('#challenge').append('<input type="button" onclick="cancelChallenge()" value="Cancel">')
     } else {
         console.log('you are busy!')
     }
+}
+
+function cancelChallenge () {
+    player.state = 'neutral'
+    $('#challenge').empty()
+    console.log(challengerId)
+    socket.emit('challenge canceled', { challengedId: challengedId})
+    challengedId = ''
 }
 
 function cleanUp () {
