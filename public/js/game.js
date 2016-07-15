@@ -33,7 +33,7 @@ function create () {
     player.scale.x = -0.5
     player.scale.y = 0.5
     player.anchor.setTo(0.5, 0.5)
-    player.name = 'Unnamed'
+    player.name = 'Sans nom'
     player.bringToTop()
     player.state = 'neutral'
     player.points = 0
@@ -112,7 +112,7 @@ var setEventHandlers = function () {
 // Socket connected
 function onSocketConnected () {
     console.log('Connected to socket server')
-    $('#playerName').text('Unnamed')
+    $('#playerName').text('Sans nom')
     socket.emit('new player', {})
 }
 
@@ -189,8 +189,8 @@ function onChallengeSent (data) {
         challengerId = data.challengerId
         player.state = 'choosing'
         $('#challenge').append('<p>You just received a challenge from ' + data.name + '</p>')
-        $('#challenge').append('<input type="button" onclick="respond(true)" value="Accept">')
-        $('#challenge').append('<input type="button" onclick="respond(false)" value="Refuse">')
+        $('#challenge').append('<input type="button" onclick="respond(true)" value="Accepter">')
+        $('#challenge').append('<input type="button" onclick="respond(false)" value="Refuser">')
 
     } else {
         console.log('received challenge but busy!')
@@ -240,7 +240,7 @@ function onPlayerBusy (data) {
     challengedId = ''
     challengerId = ''
     $('#challenge').empty()
-    $('#challenge').append('<p> Player Busy ! </p>')
+    $('#challenge').append('<p> Le joueur est occupé ! </p>')
 }
 
 function onChallengeCanceled (data) {
@@ -271,14 +271,14 @@ function respond(response) {
     socket.emit('response sent', { challengerId: challengerId, response: response })
     $('#challenge').empty()
     if(response){
-        $('#challenge').append('<p> Challenge Accepted! </p>')
+        $('#challenge').append('<p> Défi Accepté! </p>')
         opponent = playerById(challengerId)
         player.state = 'challenged'
         startChallenge()
     } else {
         challengerId = ''
         player.state = 'neutral'
-        $('#challenge').append('<p> Challenge Refused! </p>')
+        $('#challenge').append('<p> Défi Refusé! </p>')
     }
 
 }
@@ -326,7 +326,7 @@ function sendChallenge(id) {
         socket.emit('challenge sent', { challengedId: id })
         player.state = 'waiting'
         $("#challenge").append('<p>Awaiting response...</p>')
-        $('#challenge').append('<input type="button" onclick="cancelChallenge()" value="Cancel">')
+        $('#challenge').append('<input type="button" onclick="cancelChallenge()" value="Canceller">')
     } else {
         console.log('you are busy!')
     }
