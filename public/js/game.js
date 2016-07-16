@@ -37,6 +37,7 @@ function create () {
     player.bringToTop()
     player.state = 'neutral'
     player.points = 0
+    $('#points').text(player.points)
 
     cursors = game.input.keyboard.createCursorKeys()
 
@@ -230,7 +231,7 @@ function onChallengeEnded (data) {
         text = game.add.text(100, 100, 'Vous avez gagné!')
         player.points++
     }
-
+    $('#points').text(player.points)
     setTimeout(cleanUp, 3000)
 }
 
