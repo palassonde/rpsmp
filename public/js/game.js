@@ -204,13 +204,13 @@ function onResponseSent (data) {
 
     $('#challenge').empty()
     if(data.response){
-        $('#challenge').append('<p> Challenge Accepted! </p>')
+        $('#challenge').append('<p> Défi Accepté! </p>')
         opponent = playerById(data.challengedId)
         player.state = 'challenger'
         startChallenge()
     } else {
         player.state = 'neutral'
-        $('#challenge').append('<p> Challenge Refused! </p>')
+        $('#challenge').append('<p> Défi Refusé! </p>')
     }
 
 }
