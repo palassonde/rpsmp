@@ -2,6 +2,7 @@
 
 var RemotePlayer = function (id, game) {
 
+    this.option = 'roche'
     this.id = id
     this.game = game
     this.alive = true

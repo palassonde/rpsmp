@@ -33,3 +33,11 @@ canvas {
     color: #00aaff;
     cursor: pointer;
 }
+
+.alert {
+    text-align: center;
+}
+
+.navbar-static-bottom {
+    text-align: center;
+}

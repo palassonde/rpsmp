@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
     <meta charset='UTF-8' />
-    <title>RPS Multi-Player</title>
+    <title>Roche! Papier! Ciseau!</title>
     <link type='text/css' rel='stylesheet' href='/style/game.css' />
     <link rel="stylesheet" href="/style/bootstrap.min.css">
     <script src='/js/vendor/phaser.min.js'></script>
@@ -13,21 +13,24 @@
 </head>
 <body>
     <div class="container">
-        <h1>
-            Roche Papier Ciseau
-        </h1>
+        <div class="page-header">
+            <h1>
+                Roche Papier Ciseau <small>multi-joueur</small>
+            </h1>
+        </div>
+
         <h2>
             Votre Profil
         </h2>
         <label>Nom</label><p id="playerName"></p>
         <input type="text" id="name" placeholder="Entrer votre nom">
-        <input type="button" onclick="changeName()" class="btn btn-default" value="Ok">
-        <p id="points"></p><p> Parties gagnées</p>
+        <input type="button" onclick="changeName()" class="btn btn-default" value="Ok"><br>
+        <label>Parties gagnées</label><p id="points"></p>
         <h2>
             Joueurs En Ligne
         </h2>
-        <ul id="playersList">
-            <li>Vous</li>
+        <ul class="list-group" id="playersList">
+            <li class="list-group-item">Vous</li>
         </ul>
         <h2>
             Boite de duel
@@ -36,16 +39,21 @@
         </div>
         <div id="game"></div>
         <p>gauche = Roche, bas = Papier, droite = Ciseau, haut = Envoyer</p>
+        <p>Clique sur la main = changer d'option</p>
         <h2>
             Boite de discussion
         </h2>
         <div id="middle">
             <div id="chatBox"></div>
-            <input class="form-control" onkeydown="messageSubmit(this)" type="text" id="message" placeholder="Enter Your Message">
+                <input class="form-control" onkeydown="messageSubmit(this)" type="text" id="message" placeholder="Enter Your Message">
+                <input class="form-control" onclick="messageSubmit('button')" type="button" value="Envoyer">
+            </div>
+
         </div>
-    </div>
-    <div class="footer">
-        <span>Créée par </span><a href="mailto:pa.lassonde@gmail.com" target="_blank">pa.lassonde@gmail.com</a>
+        <div class="navbar navbar-static-bottom">
+            <p>Créée par <a href="mailto:pa.lassonde@gmail.com" target="_blank">pa.lassonde@gmail.com</a></p>
+            <p>Contribuez au <a href="https://github.com/palassonde/rpsmp" target="_blank">projet</a> sur Github <img src="assets/github.png"></p>
+        </div>
     </div>
 </body>
 </html>
