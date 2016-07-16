@@ -7,11 +7,14 @@ canvas {
 }
 
 #game {
-
 }
 
 #entry {
     margin-left: 5px;
+}
+
+#middle {
+    margin-bottom: 100px;
 }
 
 #chatBox {
@@ -22,14 +25,11 @@ canvas {
 }
 
 .footer {
-
-    margin-top: 100px;
-    background-color: green;
+    background-color: black;
+    color: white;
 }
 
 .players:hover {
-
     color: #00aaff;
     cursor: pointer;
-
 }
