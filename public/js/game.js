@@ -9,6 +9,7 @@ function preload () {
     game.load.image('envoyer', 'assets/envoyer.png')
 }
 
+var pageTitle = 'Mini Jeux'
 var socket
 var player
 var opponents
@@ -21,8 +22,17 @@ var sentOption
 var challengedId
 var optionNumber
 var sendButton
+var focused = true
 
 function create () {
+
+    window.onfocus = function() {
+        document.title = pageTitle
+        focused = true;
+    }
+    window.onblur = function() {
+        focused = false;
+    }
 
     // Initialization
     opponents = []
@@ -42,9 +52,9 @@ function create () {
     player.name = 'Sans nom'
     player.bringToTop()
     player.state = 'neutral'
-    player.points = 0
+    player.score = 0
     player.option = 'roche'
-    $('#points').text(player.points)
+    $('#score').text(player.score)
 
     // Controls
     cursors = game.input.keyboard.createCursorKeys()
@@ -77,13 +87,13 @@ function clickHand () {
 
 function clickButton () {
 
-    console.log('here')
     if (inChallenge && !sentOption){
         if (opponent.id){
             socket.emit('player option sent', { opponentId: opponent.id, option: player.option, state: player.state })
         } else {
             console.log('Opponent Id not set!')
         }
+        game.add.tween(sendButton).to( { y: 600 }, 500, Phaser.Easing.Linear.None, true);
         sentOption = true
     }
 
@@ -158,6 +168,8 @@ var setEventHandlers = function () {
 function onSocketConnected () {
     console.log('Connected to socket server')
     $('#playerName').text('Sans nom')
+    // Add yourself to player list
+    $('#playersList').append('<li class="list-group-item" id="you">Vous - Score : 0</span></li>')
     socket.emit('new player', {})
 }
 
@@ -168,7 +180,11 @@ function onSocketDisconnect () {
 
 // New player
 function onNewPlayer (data) {
+
     console.log('New player connected:', data.id)
+    if (!focused){
+        document.title = 'Nouveau Joueur!'
+    }
 
     // Avoid possible duplicate players
     var duplicate = playerById(data.id)
@@ -177,23 +193,15 @@ function onNewPlayer (data) {
         return
     }
 
-    // Add player to visible list
-    // var item = $('<li class="list-group-item"></li>')
-    //
-    // item.attr('id', data.id)
-    // item.html(data.name)
-    // item.attr('onclick', 'sendChallenge(this.id)')
-    // $('#playerList').append(item)
-    // console.log(item)
     var list = document.getElementById('playersList')
-    var entry = document.createElement('li')
+    var player = document.createElement('li')
     var att = document.createAttribute('id')
     att.value = data.id
-    entry.setAttributeNode(att);
-    entry.setAttribute('onclick', 'sendChallenge(this.id, this.innerHTML)')
-    entry.setAttribute('class', 'players list-group-item')
-    entry.appendChild(document.createTextNode(data.name))
-    list.appendChild(entry);
+    player.setAttributeNode(att);
+    player.setAttribute('onclick', 'sendChallenge(this.id, this.innerHTML)')
+    player.setAttribute('class', 'players list-group-item')
+    player.appendChild(document.createTextNode(data.name + ' - Score : ' + data.score))
+    list.appendChild(player);
 
     // Add new player to the remote players array
     opponents.push(new RemotePlayer(data.id, game))
@@ -209,35 +217,45 @@ function onRemovePlayer (data) {
         return
     }
 
-    if (removePlayer.player){
-        removePlayer.player.kill()
+    // If opponent leaves during a match
+    if (removePlayer.player && inChallenge){
+        $('#challenge').empty()
+        $('#challenge').append('<p class="alert alert-danger" role="alert"> Le Joueur a quitté! </p>')
+        cleanUp()
     }
 
     // Remove player from array
-    var entry = document.getElementById(data.id)
-    entry.parentNode.removeChild(entry);
+    var player = document.getElementById(data.id)
+    player.parentNode.removeChild(player);
     opponents.splice(opponents.indexOf(removePlayer), 1)
 }
 
 function onUpdatePlayer (data) {
 
-    document.getElementById(data.id).innerHTML = data.name
+    if(document.getElementById(data.id)){
+        document.getElementById(data.id).innerHTML = data.name + ' - Score : ' + data.score
+    }
 }
 
 function onMessageSent (data) {
+
+    if(!focused){
+        document.title = 'Nouveau Message'
+    }
     var date = new Date;
     var chatBox = document.getElementById("chatBox")
-    var entry = document.createElement('p')
-    var att = document.createAttribute('style')
-    att.value = "color: white;"
-    entry.setAttributeNode(att);
-    entry.setAttribute('id', 'entry')
-    entry.appendChild(document.createTextNode('(' + date.toLocaleTimeString() + ') ' + data.name + ' : ' + data.message))
-    chatBox.appendChild(entry);
+    var chat = document.createElement('p')
+    chat.setAttribute('id', 'chat')
+    chat.appendChild(document.createTextNode('(' + date.toLocaleTimeString() + ') ' + data.name + ' : ' + data.message))
+    chatBox.appendChild(chat);
     $('#chatBox').animate({"scrollTop": $('#chatBox')[0].scrollHeight}, "fast")
 }
 
 function onChallengeSent (data) {
+
+    if (!focused){
+        document.title = 'Invitation reçue!'
+    }
 
     if (player.state === 'neutral'){
         challengerId = data.challengerId
@@ -258,6 +276,10 @@ function onChallengeSent (data) {
 
 function onResponseSent (data) {
 
+    if (!focused){
+        document.title = 'Réponse reçue!'
+    }
+
     $('#challenge').empty()
     if(data.response){
         $('#challenge').append('<p class="alert alert-success" role="alert"> Défi Accepté! </p>')
@@ -273,11 +295,7 @@ function onResponseSent (data) {
 
 function onChallengeEnded (data) {
 
-    console.log(data.opponentOption)
-
     opponent.player.loadTexture(data.opponentOption)
-
-    console.log(opponent)
 
     if (data.winnerId === opponent.id){
         text = game.add.text(200, -100, 'Vous avez perdu!')
@@ -288,9 +306,10 @@ function onChallengeEnded (data) {
     } else {
         text = game.add.text(200, -100, 'Vous avez gagné!')
         game.add.tween(text).to( { y: 80 }, 500, Phaser.Easing.Linear.None, true);
-        player.points++
+        player.score++
     }
-    $('#points').text(player.points)
+    $('#score').text(player.score)
+    document.getElementById('you').innerHTML = 'Vous - Score : ' + player.score
     setTimeout(cleanUp, 3000)
 }
 
@@ -304,6 +323,10 @@ function onPlayerBusy (data) {
 }
 
 function onChallengeCanceled (data) {
+
+    if (!focused){
+        document.title = 'Réponse reçue!'
+    }
 
     player.state = 'neutral'
     challengerId = ''
@@ -352,27 +375,22 @@ function changeName(){
     if (name !== ''){
         document.getElementById('playerName').innerHTML = name
         player.name = name
-        socket.emit('update player', { name: name })
+        socket.emit('update player', { name: name, score: player.score })
     }
 }
 
 function messageSubmit(key){
 
-    var message = $('#message').val()
-
+    var message = $('#messageInput').val()
 
     if((key === 'button' || event.keyCode == 13) && message !== '') {
-
+        $('#messageInput').val('')
         var date = new Date;
-        document.getElementById('message').value = ''
         var chatBox = document.getElementById("chatBox")
-        var entry = document.createElement('p')
-        var att = document.createAttribute('style')
-        att.value = "color: white;"
-        entry.setAttributeNode(att);
-        entry.setAttribute('id', 'entry')
-        entry.appendChild(document.createTextNode('(' + date.toLocaleTimeString() + ') You : ' + message))
-        chatBox.appendChild(entry);
+        var chat = document.createElement('p')
+        chat.setAttribute('id', 'chat')
+        chat.appendChild(document.createTextNode('(' + date.toLocaleTimeString() + ') Vous : ' + message))
+        chatBox.appendChild(chat);
         $('#chatBox').animate({"scrollTop": $('#chatBox')[0].scrollHeight}, "fast")
         socket.emit('message sent', { message: message })
     } else {
@@ -405,15 +423,17 @@ function cancelChallenge () {
 
 function cleanUp () {
 
-    game.add.tween(text).to( { y: -100 }, 500, Phaser.Easing.Linear.None, true);
+    if (text){
+        game.add.tween(text).to( { y: -100 }, 500, Phaser.Easing.Linear.None, true);
+    }
     game.add.tween(opponent.player).to( { x: 600 }, 500, Phaser.Easing.Linear.None, true);
+    opponent.player = null
     opponent = null
     inChallenge = false
     player.state = 'neutral'
     challengerId = ''
     sentOption = false
     game.add.tween(sendButton).to( { y: 600 }, 500, Phaser.Easing.Linear.None, true);
-    $("#challenge").empty()
 }
 
 // Helpers //

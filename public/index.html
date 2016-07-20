@@ -2,7 +2,9 @@
 <html lang='en'>
 <head>
     <meta charset='UTF-8' />
-    <title>Roche! Papier! Ciseau!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Mini Jeux</title>
     <link type='text/css' rel='stylesheet' href='/style/game.css' />
     <link rel="stylesheet" href="/style/bootstrap.min.css">
     <script src='/js/vendor/phaser.min.js'></script>
@@ -12,43 +14,43 @@
     <script src='/js/game.js'></script>
 </head>
 <body>
-    <div class="container">
+    <div class="container-fluid">
         <div class="page-header">
             <h1>
-                Roche Papier Ciseau <small>multi-joueur</small>
+                Mini Jeux <small>multi-joueur</small>
             </h1>
         </div>
-
-        <h2>
-            Votre Profil
-        </h2>
-        <label>Nom</label><p id="playerName"></p>
-        <input type="text" id="name" placeholder="Entrer votre nom">
-        <input type="button" onclick="changeName()" class="btn btn-default" value="Ok"><br>
-        <label>Parties gagnées</label><p id="points"></p>
-        <h2>
-            Joueurs En Ligne
-        </h2>
-        <ul class="list-group" id="playersList">
-            <li class="list-group-item">Vous</li>
-        </ul>
-        <h2>
-            Boite de duel
-        </h2>
-        <div id="challenge">
-        </div>
-        <div id="game"></div>
-        <p>gauche = Roche, bas = Papier, droite = Ciseau, haut = Envoyer</p>
-        <p>Clique sur la main = changer d'option</p>
-        <h2>
-            Boite de discussion
-        </h2>
-        <div id="middle">
-            <div id="chatBox"></div>
-                <input class="form-control" onkeydown="messageSubmit(this)" type="text" id="message" placeholder="Enter Your Message">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>
+                    Votre Profil
+                </h2>
+                <p>Nom : <span id="playerName"></span></p>
+                <p>Score : <span id="score"></span></p>
+                <input type="text" id="name" placeholder="Entrer votre nom">
+                <input type="button" onclick="changeName()" class="btn btn-default" value="Ok"><br>
+                <h2>
+                    Duels
+                </h2>
+                <div id="challenge">
+                </div>
+                <div id="game"></div>
+                <p>gauche = Roche, bas = Papier, droite = Ciseau, haut = Envoyer</p>
+                <p>Clique sur la main = changer d'option</p>
+            </div>
+            <div class="col-md-6">
+                <h2>
+                    Joueurs En Ligne
+                </h2>
+                <ul class="list-group" id="playersList">
+                </ul>
+                <h2>
+                    Discussion
+                </h2>
+                <div id="chatBox"></div>
+                <input class="form-control" onkeydown="messageSubmit(this)" type="text" id="messageInput" placeholder="Enter Your Message">
                 <input class="form-control" onclick="messageSubmit('button')" type="button" value="Envoyer">
             </div>
-
         </div>
         <div class="navbar navbar-static-bottom">
             <p>Créée par <a href="mailto:pa.lassonde@gmail.com" target="_blank">pa.lassonde@gmail.com</a></p>
