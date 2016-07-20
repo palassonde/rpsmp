@@ -97,6 +97,7 @@ function clickButton () {
         sentOption = true
     }
 
+
 }
 
 function update () {
@@ -263,8 +264,8 @@ function onChallengeSent (data) {
         $('#challenge').empty()
         $('#challenge').append($('<div class="alert alert-info" role="alert"></div>').append(
             '<p>Vous avez reçu une invitation de ' + data.name + '</p>'+
-            '<input type="button" onclick="respond(true)" value="Accepter">'+
-            '<input type="button" onclick="respond(false)" value="Refuser">'
+            '<input class="btn btn-default" type="button" onclick="respond(true)" value="Accepter">'+
+            '<input class="btn btn-default" type="button" onclick="respond(false)" value="Refuser">'
         ))
 
     } else {
@@ -282,19 +283,23 @@ function onResponseSent (data) {
 
     $('#challenge').empty()
     if(data.response){
-        $('#challenge').append('<p class="alert alert-success" role="alert"> Défi Accepté! </p>')
+        $('#challenge').append($('<div class="alert alert-success" role="alert"></div>').append(
+            '<p> Partie Accepté! </p>'+
+            '<input class="btn btn-default" type="button" onclick="cancelChallenge()" value="Annuler">'
+        ))
         opponent = playerById(data.challengedId)
         player.state = 'challenger'
         startChallenge()
     } else {
         player.state = 'neutral'
-        $('#challenge').append('<p class="alert alert-danger" role="alert"> Défi Refusé! </p>')
+        $('#challenge').append('<p class="alert alert-danger" role="alert"> Partie refusée! </p>')
     }
 
 }
 
 function onChallengeEnded (data) {
 
+    $('#challenge').empty()
     opponent.player.loadTexture(data.opponentOption)
 
     if (data.winnerId === opponent.id){
@@ -328,9 +333,9 @@ function onChallengeCanceled (data) {
         document.title = 'Réponse reçue!'
     }
 
-    player.state = 'neutral'
-    challengerId = ''
     $('#challenge').empty()
+    $('#challenge').append('<p class="alert alert-danger" role="alert"> Le Joueur a annulé la partie! </p>')
+    cleanUp()
 
 }
 
@@ -355,14 +360,17 @@ function respond(response) {
     socket.emit('response sent', { challengerId: challengerId, response: response })
     $('#challenge').empty()
     if(response){
-        $('#challenge').append('<p class="alert alert-success" role="alert"> Défi Accepté! </p>')
+        $('#challenge').append($('<div class="alert alert-success" role="alert"></div>').append(
+            '<p> Partie Accepté! </p>'+
+            '<input class="btn btn-default" type="button" onclick="cancelChallenge()" value="Annuler">'
+        ))
         opponent = playerById(challengerId)
         player.state = 'challenged'
         startChallenge()
     } else {
         challengerId = ''
         player.state = 'neutral'
-        $('#challenge').append('<p class="alert alert-danger" role="alert"> Défi Refusé! </p>')
+        $('#challenge').append('<p class="alert alert-danger" role="alert"> Partie refusé! </p>')
     }
 
 }
@@ -407,7 +415,7 @@ function sendChallenge(id, name) {
         $('#challenge').empty()
         $('#challenge').append($('<div class="alert alert-info" role="alert"></div>').append(
             '<p>En attente de la réponse de '+ name + '...</p>'+
-            '<input type="button" onclick="cancelChallenge()" value="Canceller">'
+            '<input class="btn btn-default" type="button" onclick="cancelChallenge()" value="Annuler">'
         ))
     } else {
         console.log('you are busy!')
@@ -415,10 +423,10 @@ function sendChallenge(id, name) {
 }
 
 function cancelChallenge () {
-    player.state = 'neutral'
+
     $('#challenge').empty()
     socket.emit('challenge canceled', { challengedId: challengedId})
-    challengedId = ''
+    cleanUp()
 }
 
 function cleanUp () {
@@ -426,7 +434,9 @@ function cleanUp () {
     if (text){
         game.add.tween(text).to( { y: -100 }, 500, Phaser.Easing.Linear.None, true);
     }
-    game.add.tween(opponent.player).to( { x: 600 }, 500, Phaser.Easing.Linear.None, true);
+    if (opponent) {
+        game.add.tween(opponent.player).to( { x: 600 }, 500, Phaser.Easing.Linear.None, true);
+    }
     opponent.player = null
     opponent = null
     inChallenge = false
