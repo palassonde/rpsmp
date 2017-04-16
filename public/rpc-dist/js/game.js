@@ -38,7 +38,7 @@ function create () {
 
     // Initialization
     opponents = []
-    ipAddress = 'localhost'
+    ipAddress = 'palassonde.com'
     port = '3535'
 
 

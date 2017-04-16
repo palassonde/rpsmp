@@ -1,0 +1,43 @@
+body {
+    margin: 0;
+}
+
+canvas {
+    display: block;
+}
+
+#game {
+}
+
+#chat {
+    margin-bottom: 5px;
+}
+
+#chatBox {
+    padding: 5px;
+    text-align: left;
+    overflow-y: scroll;
+    height:200px;
+    background-color: black;
+    color: lawngreen;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.footer {
+    background-color: black;
+    color: white;
+}
+
+.players:hover {
+    color: #00aaff;
+    cursor: pointer;
+}
+
+.alert {
+    text-align: center;
+}
+
+.navbar-static-bottom {
+    text-align: center;
+}
