@@ -40,11 +40,7 @@ function create () {
     opponents = []
     ipAddress = '192.168.2.45'
     port = '3535'
-
-
     socket = io.connect('http://' + ipAddress + ':' + port)
-
-    debugger;
     inChallenge = false
     sentOption = false
     optionNumber = 0

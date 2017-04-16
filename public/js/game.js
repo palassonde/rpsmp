@@ -43,8 +43,6 @@ function create () {
 
 
     socket = io.connect('http://' + ipAddress + ':' + port)
-
-    debugger;
     inChallenge = false
     sentOption = false
     optionNumber = 0

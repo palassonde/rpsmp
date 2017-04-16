@@ -41,10 +41,7 @@ function create () {
     ipAddress = 'palassonde.com'
     port = '3535'
 
-
     socket = io.connect('http://' + ipAddress + ':' + port)
-
-    debugger;
     inChallenge = false
     sentOption = false
     optionNumber = 0
